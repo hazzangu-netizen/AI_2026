@@ -1,1 +1,1765 @@
 
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>바이브 코딩(Vibe Coding)</title>
+  <style>
+    :root {
+      --bg: #F7F5EF;
+      --ink: #1F2933;
+      --green: #2F5D50;
+      --green-soft: #DDEADF;
+      --orange: #E8A87C;
+      --white: #FFFFFF;
+      --muted: #65727D;
+      --line: rgba(31, 41, 51, 0.12);
+      --shadow: 0 22px 48px rgba(31, 41, 51, 0.12);
+      --soft-shadow: 0 12px 30px rgba(31, 41, 51, 0.09);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+    }
+
+    html,
+    body,
+    .slide,
+    .slide * {
+      word-break: keep-all;
+      overflow-wrap: break-word;
+      line-break: strict;
+    }
+
+    body {
+      cursor: default;
+    }
+
+    .deck {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background:
+        linear-gradient(90deg, rgba(47, 93, 80, 0.045) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(47, 93, 80, 0.035) 1px, transparent 1px),
+        var(--bg);
+      background-size: 72px 72px;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-rows: 76px 1fr 58px;
+      width: 100vw;
+      height: 100vh;
+      padding: 34px 64px 26px;
+      opacity: 0;
+      transform: translateX(38px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;
+    }
+
+    .slide.active {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+      z-index: 2;
+    }
+
+    .slide.prev {
+      transform: translateX(-38px);
+    }
+
+    .topbar,
+    .bottombar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+
+    .mark {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .mark::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 18px 0 0 rgba(47, 93, 80, 0.35);
+    }
+
+    .content {
+      align-self: center;
+      display: grid;
+      grid-template-columns: 0.92fr 1.08fr;
+      gap: 56px;
+      align-items: center;
+      min-height: 0;
+      min-width: 0;
+    }
+
+    .content.wide {
+      grid-template-columns: 1fr;
+      gap: 28px;
+      align-items: stretch;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 64px;
+      line-height: 1.1;
+      font-weight: 850;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      font-size: 52px;
+      line-height: 1.18;
+      font-weight: 820;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      font-size: 28px;
+      line-height: 1.25;
+      font-weight: 800;
+    }
+
+    .lead {
+      margin-top: 26px;
+      font-size: 28px;
+      line-height: 1.55;
+      font-weight: 500;
+      color: #34434D;
+    }
+
+    .sub {
+      margin-top: 18px;
+      font-size: 20px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      min-height: 34px;
+      padding: 7px 13px;
+      margin-bottom: 20px;
+      border-radius: 999px;
+      background: var(--green-soft);
+      color: var(--green);
+      font-size: 17px;
+      font-weight: 800;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      padding: 7px 13px;
+      border-radius: 999px;
+      background: var(--green);
+      color: var(--white);
+      font-size: 17px;
+      font-weight: 800;
+      max-width: 100%;
+      text-align: center;
+    }
+
+    .nowrap {
+      white-space: nowrap;
+    }
+
+    .slide3-lead {
+      max-width: 720px;
+    }
+
+    .quote {
+      border-left: 5px solid var(--green);
+      padding: 16px 0 16px 22px;
+      color: #26343D;
+      font-size: 25px;
+      line-height: 1.45;
+      font-weight: 700;
+      background: linear-gradient(90deg, rgba(47, 93, 80, 0.08), transparent);
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.74);
+      box-shadow: var(--soft-shadow);
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-width: 180px;
+    }
+
+    .progress {
+      width: 100%;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(47, 93, 80, 0.13);
+      overflow: hidden;
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: var(--green);
+      transition: width 0.4s ease;
+    }
+
+    .footer-hint {
+      flex: 0 0 170px;
+      text-align: right;
+      font-size: 14px;
+      color: rgba(101, 114, 125, 0.8);
+    }
+
+    .title-grid {
+      grid-template-columns: 1.02fr 0.98fr;
+      gap: 34px;
+    }
+
+    .title-block {
+      align-self: center;
+    }
+
+    .title-block h1 {
+      font-size: 78px;
+    }
+
+    .meta-line {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      margin-top: 44px;
+      color: var(--muted);
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .meta-line span + span::before {
+      content: "";
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      margin-right: 16px;
+      border-radius: 50%;
+      background: var(--green);
+      vertical-align: middle;
+    }
+
+    .hero-graphic {
+      position: relative;
+      min-height: 500px;
+    }
+
+    .code-window {
+      position: absolute;
+      right: 12px;
+      top: 70px;
+      width: 520px;
+      height: 352px;
+      padding: 58px 32px 32px;
+      border-radius: 8px;
+      background: #15211F;
+      color: #DDEADF;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .code-window::before {
+      content: "";
+      position: absolute;
+      top: 20px;
+      left: 24px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--orange);
+      box-shadow: 22px 0 0 #F1D18A, 44px 0 0 #78B995;
+    }
+
+    .code-line {
+      height: 14px;
+      margin: 16px 0;
+      border-radius: 999px;
+      background: rgba(221, 234, 223, 0.22);
+    }
+
+    .code-line.short {
+      width: 46%;
+    }
+
+    .code-line.mid {
+      width: 66%;
+    }
+
+    .code-line.long {
+      width: 88%;
+    }
+
+    .ai-chip {
+      position: absolute;
+      left: 38px;
+      bottom: 42px;
+      width: 226px;
+      height: 226px;
+      border-radius: 50%;
+      border: 2px solid rgba(47, 93, 80, 0.22);
+      background: radial-gradient(circle, #FFFFFF 0 30%, var(--green-soft) 31% 56%, transparent 57%);
+      box-shadow: var(--soft-shadow);
+    }
+
+    .ai-chip::before,
+    .ai-chip::after {
+      content: "";
+      position: absolute;
+      inset: 34px;
+      border-radius: 50%;
+      border: 1px solid rgba(47, 93, 80, 0.32);
+    }
+
+    .ai-chip::after {
+      inset: 82px;
+      background: var(--green);
+      border: none;
+      box-shadow: 70px -50px 0 -24px var(--orange), -58px 62px 0 -26px rgba(47, 93, 80, 0.45);
+    }
+
+    .agenda-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .agenda-item {
+      min-height: 170px;
+      padding: 24px 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border-radius: 8px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      box-shadow: var(--soft-shadow);
+    }
+
+    .agenda-item strong {
+      font-size: 24px;
+      line-height: 1.3;
+    }
+
+    .agenda-item span {
+      color: var(--green);
+      font-size: 34px;
+      font-weight: 850;
+    }
+
+    .definition-panel {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+
+    .key-card {
+      padding: 24px 26px;
+      border-radius: 8px;
+      background: var(--white);
+      box-shadow: var(--soft-shadow);
+      border: 1px solid var(--line);
+    }
+
+    .key-card h3 {
+      margin-bottom: 8px;
+      color: var(--green);
+      font-size: 24px;
+    }
+
+    .key-card p {
+      font-size: 21px;
+      line-height: 1.48;
+      color: #35444E;
+    }
+
+    .prompt-diagram {
+      display: grid;
+      grid-template-columns: minmax(120px, 1fr) 74px minmax(120px, 1fr) 74px minmax(120px, 1fr);
+      align-items: center;
+      gap: 0;
+      padding: 42px 30px;
+      background: var(--white);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .node {
+      min-height: 150px;
+      padding: 26px 20px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      font-size: 25px;
+      font-weight: 830;
+      color: var(--ink);
+      border: 1px solid rgba(47, 93, 80, 0.18);
+      background: var(--green-soft);
+    }
+
+    .node.ai {
+      background: var(--green);
+      color: var(--white);
+    }
+
+    .arrow {
+      position: relative;
+      height: 3px;
+      background: rgba(47, 93, 80, 0.42);
+    }
+
+    .arrow::after {
+      content: "";
+      position: absolute;
+      right: -2px;
+      top: -7px;
+      border-left: 13px solid rgba(47, 93, 80, 0.42);
+      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
+    }
+
+    .timeline {
+      position: relative;
+      padding: 28px 0;
+    }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 36px;
+      top: 28px;
+      bottom: 28px;
+      width: 4px;
+      border-radius: 999px;
+      background: rgba(47, 93, 80, 0.22);
+    }
+
+    .time-item {
+      position: relative;
+      margin: 0 0 26px 74px;
+      padding: 22px 24px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--soft-shadow);
+    }
+
+    .time-item::before {
+      content: "";
+      position: absolute;
+      left: -50px;
+      top: 27px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 8px var(--green-soft);
+    }
+
+    .time-item strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--green);
+      font-size: 22px;
+    }
+
+    .time-item p {
+      font-size: 21px;
+      line-height: 1.45;
+    }
+
+    .compare {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 26px;
+      align-items: stretch;
+    }
+
+    .compare-card {
+      padding: 30px;
+      border-radius: 8px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      box-shadow: var(--soft-shadow);
+    }
+
+    .compare-card.vibe {
+      background: var(--green-soft);
+      border-color: rgba(47, 93, 80, 0.2);
+    }
+
+    .compare-card h3 {
+      margin-bottom: 24px;
+      color: var(--green);
+    }
+
+    .check-list {
+      display: grid;
+      gap: 18px;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .check-list li {
+      position: relative;
+      padding-left: 34px;
+      font-size: 23px;
+      line-height: 1.42;
+      color: #34434D;
+    }
+
+    .check-list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 9px;
+      width: 15px;
+      height: 15px;
+      border-radius: 5px;
+      background: var(--green);
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .step {
+      position: relative;
+      min-height: 220px;
+      padding: 24px 20px;
+      background: var(--white);
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      box-shadow: var(--soft-shadow);
+    }
+
+    .step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -15px;
+      width: 24px;
+      height: 24px;
+      border-top: 4px solid var(--green);
+      border-right: 4px solid var(--green);
+      transform: translateY(-50%) rotate(45deg);
+      background: var(--bg);
+      z-index: 2;
+    }
+
+    .step span {
+      display: block;
+      margin-bottom: 40px;
+      color: var(--green);
+      font-size: 20px;
+      font-weight: 850;
+    }
+
+    .step strong {
+      display: block;
+      font-size: 24px;
+      line-height: 1.3;
+    }
+
+    .voice-strip {
+      margin-top: 28px;
+      padding: 18px 24px;
+      border-radius: 8px;
+      background: #15211F;
+      color: var(--green-soft);
+      font-size: 22px;
+      font-weight: 760;
+      box-shadow: var(--soft-shadow);
+    }
+
+    .app-mock {
+      width: 520px;
+      max-width: 100%;
+      margin-left: auto;
+      overflow: hidden;
+      border-radius: 8px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .app-head {
+      padding: 22px 26px;
+      color: var(--white);
+      background: var(--green);
+      font-size: 24px;
+      font-weight: 850;
+    }
+
+    .app-body {
+      padding: 28px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .ingredient {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 18px;
+      border-radius: 8px;
+      background: var(--green-soft);
+      font-size: 20px;
+      font-weight: 720;
+    }
+
+    .menu-card {
+      padding: 22px;
+      border-radius: 8px;
+      background: #FFF6EE;
+      border: 1px solid rgba(232, 168, 124, 0.45);
+    }
+
+    .menu-card strong {
+      display: block;
+      color: var(--green);
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .big-percent {
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+      gap: 36px;
+      align-items: center;
+    }
+
+    .percent-ring {
+      width: 360px;
+      height: 360px;
+      margin: auto;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background:
+        conic-gradient(var(--green) 0 25%, rgba(47, 93, 80, 0.13) 25% 100%);
+      box-shadow: var(--shadow);
+    }
+
+    .percent-ring div {
+      width: 245px;
+      height: 245px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--bg);
+      color: var(--green);
+      font-size: 72px;
+      font-weight: 900;
+    }
+
+    .metric-stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .metric {
+      padding: 26px 28px;
+      border-radius: 8px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      box-shadow: var(--soft-shadow);
+    }
+
+    .metric strong {
+      display: block;
+      color: var(--green);
+      font-size: 36px;
+      margin-bottom: 6px;
+    }
+
+    .metric p {
+      font-size: 21px;
+      line-height: 1.42;
+    }
+
+    .benefit-grid,
+    .risk-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .benefit,
+    .risk {
+      min-height: 250px;
+      padding: 24px 22px;
+      border-radius: 8px;
+      box-shadow: var(--soft-shadow);
+      border: 1px solid rgba(47, 93, 80, 0.13);
+    }
+
+    .benefit {
+      background: var(--green-soft);
+    }
+
+    .risk {
+      background: #F7D9C3;
+      border-color: rgba(232, 168, 124, 0.45);
+    }
+
+    .benefit .num,
+    .risk .num {
+      display: grid;
+      place-items: center;
+      width: 50px;
+      height: 50px;
+      margin-bottom: 48px;
+      border-radius: 50%;
+      color: var(--white);
+      background: var(--green);
+      font-weight: 900;
+      font-size: 22px;
+    }
+
+    .risk .num {
+      background: #B9663D;
+    }
+
+    .benefit strong,
+    .risk strong {
+      font-size: 22px;
+      line-height: 1.42;
+    }
+
+    .expert-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 24px;
+    }
+
+    .expert {
+      min-height: 410px;
+      padding: 30px;
+      border-radius: 8px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      box-shadow: var(--soft-shadow);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .expert .avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background:
+        linear-gradient(135deg, var(--green) 0 55%, var(--orange) 56% 100%);
+      box-shadow: inset 0 0 0 12px rgba(255, 255, 255, 0.5);
+    }
+
+    .expert p {
+      font-size: 23px;
+      line-height: 1.48;
+      color: #34434D;
+    }
+
+    .deploy-map {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .deploy-card {
+      min-height: 280px;
+      padding: 28px;
+      border-radius: 8px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      box-shadow: var(--soft-shadow);
+    }
+
+    .deploy-icon {
+      width: 72px;
+      height: 72px;
+      margin-bottom: 46px;
+      border-radius: 8px;
+      background: var(--green-soft);
+      position: relative;
+    }
+
+    .deploy-icon.server::before {
+      content: "";
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      top: 15px;
+      height: 11px;
+      border-radius: 999px;
+      background: var(--green);
+      box-shadow: 0 16px 0 var(--green), 0 32px 0 var(--green);
+    }
+
+    .deploy-icon.cloud::before {
+      content: "";
+      position: absolute;
+      left: 15px;
+      top: 28px;
+      width: 42px;
+      height: 24px;
+      border-radius: 20px;
+      background: var(--green);
+      box-shadow: -8px 5px 0 -2px var(--green), 10px -8px 0 -4px var(--green);
+    }
+
+    .deploy-icon.rocket::before {
+      content: "";
+      position: absolute;
+      left: 24px;
+      top: 10px;
+      width: 24px;
+      height: 48px;
+      border-radius: 50% 50% 10px 10px;
+      background: var(--green);
+      transform: rotate(38deg);
+    }
+
+    .deploy-card h3 {
+      margin-bottom: 12px;
+      color: var(--green);
+    }
+
+    .deploy-card p {
+      font-size: 22px;
+      line-height: 1.44;
+    }
+
+    .business-board {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .biz-item {
+      min-height: 160px;
+      padding: 26px;
+      border-radius: 8px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      box-shadow: var(--soft-shadow);
+    }
+
+    .biz-item .badge {
+      margin-bottom: 18px;
+    }
+
+    .biz-item p {
+      font-size: 23px;
+      line-height: 1.4;
+      font-weight: 720;
+    }
+
+    .collab-center {
+      display: grid;
+      place-items: center;
+      text-align: center;
+      min-height: 505px;
+      border-radius: 8px;
+      background:
+        linear-gradient(135deg, rgba(47, 93, 80, 0.96), rgba(31, 41, 51, 0.96));
+      color: var(--white);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .collab-center::before {
+      content: "";
+      position: absolute;
+      width: 360px;
+      height: 360px;
+      border: 2px solid rgba(221, 234, 223, 0.18);
+      transform: rotate(45deg);
+    }
+
+    .collab-center h2 {
+      position: relative;
+      max-width: 780px;
+      font-size: 62px;
+      z-index: 1;
+    }
+
+    .final-screen {
+      display: grid;
+      place-items: center;
+      text-align: center;
+      min-height: 600px;
+    }
+
+    .final-quote {
+      max-width: 1280px;
+      margin: 0 auto;
+      font-size: 40px;
+      line-height: 1.36;
+      font-weight: 840;
+      color: var(--ink);
+    }
+
+    .final-quote span {
+      display: block;
+      white-space: nowrap;
+    }
+
+    .thanks {
+      margin-top: 54px;
+      color: var(--green);
+      font-size: 36px;
+      font-weight: 850;
+    }
+
+    .reference {
+      margin-top: 26px;
+      color: var(--muted);
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+
+    /* ===== Premium motion layer: layout/content unchanged, animation only ===== */
+    @keyframes deckGridDrift {
+      0% { background-position: 0 0, 0 0, 0 0; }
+      100% { background-position: 72px 72px, 72px 72px, 0 0; }
+    }
+
+    @keyframes fadeUpPremium {
+      0% {
+        opacity: 0;
+        transform: translateY(22px);
+        filter: blur(6px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+      }
+    }
+
+    @keyframes softScaleIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.94) translateY(16px);
+        filter: blur(7px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        filter: blur(0);
+      }
+    }
+
+    @keyframes lineGrow {
+      0% { transform: scaleX(0); opacity: 0.2; }
+      100% { transform: scaleX(1); opacity: 1; }
+    }
+
+    @keyframes verticalGrow {
+      0% { transform: scaleY(0); opacity: 0.2; }
+      100% { transform: scaleY(1); opacity: 1; }
+    }
+
+    @keyframes chipFloatRotate {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-14px) rotate(5deg); }
+    }
+
+    @keyframes chipPulse {
+      0%, 100% { box-shadow: var(--soft-shadow), 0 0 0 0 rgba(47, 93, 80, 0.18); }
+      50% { box-shadow: var(--soft-shadow), 0 0 0 22px rgba(47, 93, 80, 0.04); }
+    }
+
+    @keyframes codeLineSweep {
+      0% { transform: translateX(-120%); opacity: 0; }
+      25% { opacity: 1; }
+      100% { transform: translateX(120%); opacity: 0; }
+    }
+
+    @keyframes codeTypingGlow {
+      0%, 100% { opacity: 0.35; transform: scaleX(0.72); }
+      50% { opacity: 1; transform: scaleX(1); }
+    }
+
+    @keyframes arrowPulse {
+      0%, 100% { opacity: 0.45; transform: translateY(-50%) rotate(45deg) scale(1); }
+      50% { opacity: 1; transform: translateY(-50%) rotate(45deg) scale(1.16); }
+    }
+
+    @keyframes progressShine {
+      0% { transform: translateX(-120%); }
+      100% { transform: translateX(220%); }
+    }
+
+    @keyframes ringPop {
+      0% { transform: scale(0.84) rotate(-18deg); opacity: 0; filter: blur(6px); }
+      70% { transform: scale(1.04) rotate(4deg); opacity: 1; filter: blur(0); }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; filter: blur(0); }
+    }
+
+    @keyframes badgeGlow {
+      0%, 100% { box-shadow: 0 0 0 rgba(47, 93, 80, 0); }
+      50% { box-shadow: 0 0 24px rgba(47, 93, 80, 0.22); }
+    }
+
+    @keyframes finalShimmer {
+      0% { background-position: -180% 0; }
+      100% { background-position: 180% 0; }
+    }
+
+    .deck {
+      animation: deckGridDrift 26s linear infinite;
+    }
+
+    .slide.active .eyebrow,
+    .slide.active h1,
+    .slide.active h2,
+    .slide.active .lead,
+    .slide.active .sub,
+    .slide.active .quote,
+    .slide.active .meta-line,
+    .slide.active .voice-strip,
+    .slide.active .thanks,
+    .slide.active .reference {
+      animation: fadeUpPremium 0.82s cubic-bezier(.16, 1, .3, 1) both;
+    }
+
+    .slide.active h1,
+    .slide.active h2 { animation-delay: 0.08s; }
+
+    .slide.active .lead { animation-delay: 0.18s; }
+    .slide.active .sub { animation-delay: 0.28s; }
+    .slide.active .quote { animation-delay: 0.34s; }
+    .slide.active .meta-line { animation-delay: 0.36s; }
+
+    .slide.active .card,
+    .slide.active .agenda-item,
+    .slide.active .key-card,
+    .slide.active .compare-card,
+    .slide.active .step,
+    .slide.active .ingredient,
+    .slide.active .menu-card,
+    .slide.active .metric,
+    .slide.active .benefit,
+    .slide.active .risk,
+    .slide.active .expert,
+    .slide.active .deploy-card,
+    .slide.active .biz-item,
+    .slide.active .app-mock,
+    .slide.active .prompt-diagram,
+    .slide.active .collab-center,
+    .slide.active .final-screen {
+      animation: softScaleIn 0.78s cubic-bezier(.16, 1, .3, 1) both;
+    }
+
+    .slide.active .agenda-item:nth-child(1),
+    .slide.active .key-card:nth-child(1),
+    .slide.active .compare-card:nth-child(1),
+    .slide.active .step:nth-child(1),
+    .slide.active .benefit:nth-child(1),
+    .slide.active .risk:nth-child(1),
+    .slide.active .expert:nth-child(1),
+    .slide.active .deploy-card:nth-child(1),
+    .slide.active .biz-item:nth-child(1) { animation-delay: 0.12s; }
+
+    .slide.active .agenda-item:nth-child(2),
+    .slide.active .key-card:nth-child(2),
+    .slide.active .compare-card:nth-child(2),
+    .slide.active .step:nth-child(2),
+    .slide.active .benefit:nth-child(2),
+    .slide.active .risk:nth-child(2),
+    .slide.active .expert:nth-child(2),
+    .slide.active .deploy-card:nth-child(2),
+    .slide.active .biz-item:nth-child(2) { animation-delay: 0.20s; }
+
+    .slide.active .agenda-item:nth-child(3),
+    .slide.active .key-card:nth-child(3),
+    .slide.active .step:nth-child(3),
+    .slide.active .benefit:nth-child(3),
+    .slide.active .risk:nth-child(3),
+    .slide.active .expert:nth-child(3),
+    .slide.active .deploy-card:nth-child(3),
+    .slide.active .biz-item:nth-child(3) { animation-delay: 0.28s; }
+
+    .slide.active .agenda-item:nth-child(4),
+    .slide.active .step:nth-child(4),
+    .slide.active .benefit:nth-child(4),
+    .slide.active .risk:nth-child(4),
+    .slide.active .biz-item:nth-child(4) { animation-delay: 0.36s; }
+
+    .slide.active .agenda-item:nth-child(5),
+    .slide.active .step:nth-child(5),
+    .slide.active .benefit:nth-child(5),
+    .slide.active .risk:nth-child(5) { animation-delay: 0.44s; }
+
+    .slide.active .agenda-item:nth-child(6) { animation-delay: 0.52s; }
+    .slide.active .agenda-item:nth-child(7) { animation-delay: 0.60s; }
+
+    .slide.active .hero-graphic {
+      animation: softScaleIn 0.9s cubic-bezier(.16, 1, .3, 1) 0.14s both;
+    }
+
+    .code-window::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 120px;
+      left: -140px;
+      background: linear-gradient(90deg, transparent, rgba(221, 234, 223, 0.16), transparent);
+      transform: skewX(-14deg);
+      pointer-events: none;
+    }
+
+    .slide.active .code-window::after {
+      animation: codeLineSweep 2.6s ease-in-out 0.85s infinite;
+    }
+
+    .slide.active .code-line {
+      transform-origin: left center;
+      animation: codeTypingGlow 1.8s ease-in-out infinite;
+    }
+
+    .slide.active .code-line:nth-child(1) { animation-delay: 0.15s; }
+    .slide.active .code-line:nth-child(2) { animation-delay: 0.30s; }
+    .slide.active .code-line:nth-child(3) { animation-delay: 0.45s; }
+    .slide.active .code-line:nth-child(4) { animation-delay: 0.60s; }
+    .slide.active .code-line:nth-child(5) { animation-delay: 0.75s; }
+    .slide.active .code-line:nth-child(6) { animation-delay: 0.90s; }
+
+    .slide.active .ai-chip {
+      animation:
+        chipFloatRotate 4.8s ease-in-out infinite,
+        chipPulse 3.4s ease-in-out infinite;
+    }
+
+    .slide.active .badge,
+    .slide.active .eyebrow {
+      animation-name: fadeUpPremium, badgeGlow;
+      animation-duration: 0.82s, 2.9s;
+      animation-timing-function: cubic-bezier(.16, 1, .3, 1), ease-in-out;
+      animation-fill-mode: both, none;
+      animation-iteration-count: 1, infinite;
+    }
+
+    .slide.active .prompt-diagram .node {
+      animation: softScaleIn 0.68s cubic-bezier(.16, 1, .3, 1) both;
+    }
+
+    .slide.active .prompt-diagram .node:nth-child(1) { animation-delay: 0.18s; }
+    .slide.active .prompt-diagram .node:nth-child(3) { animation-delay: 0.34s; }
+    .slide.active .prompt-diagram .node:nth-child(5) { animation-delay: 0.50s; }
+
+    .slide.active .prompt-diagram .arrow {
+      transform-origin: left center;
+      animation: lineGrow 0.62s ease-out both;
+    }
+
+    .slide.active .prompt-diagram .arrow:nth-child(2) { animation-delay: 0.30s; }
+    .slide.active .prompt-diagram .arrow:nth-child(4) { animation-delay: 0.46s; }
+
+    .timeline::before {
+      transform-origin: top center;
+    }
+
+    .slide.active .timeline::before {
+      animation: verticalGrow 0.8s ease-out both;
+    }
+
+    .slide.active .time-item {
+      animation: fadeUpPremium 0.72s cubic-bezier(.16, 1, .3, 1) both;
+    }
+
+    .slide.active .time-item:nth-child(1) { animation-delay: 0.16s; }
+    .slide.active .time-item:nth-child(2) { animation-delay: 0.32s; }
+    .slide.active .time-item:nth-child(3) { animation-delay: 0.48s; }
+
+    .slide.active .step:not(:last-child)::after {
+      animation: arrowPulse 1.35s ease-in-out infinite;
+    }
+
+    .slide.active .percent-ring {
+      animation: ringPop 1s cubic-bezier(.16, 1, .3, 1) 0.2s both;
+    }
+
+    .progress span {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress span::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 90px;
+      left: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);
+      transform: translateX(-120%);
+      animation: progressShine 2.1s ease-in-out infinite;
+    }
+
+    .slide.active .collab-center::before {
+      animation: chipFloatRotate 6s ease-in-out infinite;
+    }
+
+    .slide.active .final-quote {
+      background: linear-gradient(90deg, var(--ink), var(--green), var(--orange), var(--green), var(--ink));
+      background-size: 240% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: finalShimmer 5s ease-in-out infinite, fadeUpPremium 0.9s cubic-bezier(.16, 1, .3, 1) both;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+
+    @media (max-width: 1180px) {
+      .slide {
+        padding: 28px 46px 24px;
+      }
+
+      h1 {
+        font-size: 56px;
+      }
+
+      h2 {
+        font-size: 46px;
+      }
+
+      .lead {
+        font-size: 25px;
+      }
+
+      .content {
+        gap: 34px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck" aria-live="polite">
+    <section class="slide active" data-category="표지">
+      <div class="topbar"><span class="mark">Vibe Coding</span></div>
+      <div class="content title-grid">
+        <div class="title-block">
+          <span class="eyebrow"><span class="nowrap">AI 기반</span> 프로그래밍</span>
+          <h1>바이브 코딩<br />(Vibe Coding)</h1>
+          <p class="lead"><span class="nowrap">AI 기반</span> 프로그래밍의 새로운 패러다임</p>
+          <div class="meta-line">
+            <span>AI와 비즈니스 애플리케이션</span>
+            <span>10조</span>
+            <span>2026.06.06</span>
+          </div>
+        </div>
+        <div class="hero-graphic" aria-hidden="true">
+          <div class="code-window">
+            <div class="code-line long"></div>
+            <div class="code-line mid"></div>
+            <div class="code-line short"></div>
+            <div class="code-line long"></div>
+            <div class="code-line mid"></div>
+            <div class="code-line short"></div>
+          </div>
+          <div class="ai-chip"></div>
+        </div>
+      </div>
+      <div class="bottombar"></div>
+    </section>
+
+    <section class="slide" data-category="목차">
+      <div class="topbar"><span class="mark">Agenda</span></div>
+      <div class="content wide">
+        <div>
+          <span class="eyebrow">발표 흐름</span>
+          <h2>개념에서 <span class="nowrap">비즈니스 시사점</span>까지</h2>
+        </div>
+        <div class="agenda-grid">
+          <div class="agenda-item"><span>01</span><strong>바이브 코딩 정의</strong></div>
+          <div class="agenda-item"><span>02</span><strong>탄생 배경</strong></div>
+          <div class="agenda-item"><span>03</span><strong>작동 방식</strong></div>
+          <div class="agenda-item"><span>04</span><strong>실제 사례</strong></div>
+          <div class="agenda-item"><span>05</span><strong>장단점</strong></div>
+          <div class="agenda-item"><span>06</span><strong class="nowrap">비즈니스 시사점</strong></div>
+          <div class="agenda-item"><span>07</span><strong>결론</strong></div>
+        </div>
+      </div>
+      <div class="bottombar"></div>
+    </section>
+
+    <section class="slide" data-category="정의">
+      <div class="topbar"><span class="mark">Definition</span></div>
+      <div class="content">
+        <div>
+          <span class="eyebrow">바이브 코딩이란?</span>
+          <h2>프롬프트가 코드 생산의 출발점이 되는 방식</h2>
+          <p class="lead slide3-lead">LLM에 자연어 프롬프트를 입력해 문제를 해결하는<br /><span class="nowrap">AI 기반</span> 프로그래밍 방식이다.</p>
+        </div>
+        <div class="definition-panel">
+          <div class="key-card">
+            <h3><span class="nowrap">역할 변화</span></h3>
+            <p>프로그래머는 코드 작성자에서 AI를 가이드하고 결과물을 테스트하는 사람으로 이동한다.</p>
+          </div>
+          <div class="key-card">
+            <h3>핵심 특징</h3>
+            <p>사용자는 코드를 완전히 이해하지 않아도 AI가 생성한 코드를 수용하고 실행할 수 있다.</p>
+          </div>
+          <div class="prompt-diagram" aria-label="Prompt to AI to Code">
+            <div class="node">Prompt</div>
+            <div class="arrow"></div>
+            <div class="node ai">AI</div>
+            <div class="arrow"></div>
+            <div class="node">Code</div>
+          </div>
+        </div>
+      </div>
+      <div class="bottombar"></div>
+    </section>
+
+    <section class="slide" data-category="탄생 배경">
+      <div class="topbar"><span class="mark">Origin</span></div>
+      <div class="content">
+        <div>
+          <span class="eyebrow">용어의 탄생</span>
+          <h2>2025년, AI 코딩의 감각을 설명하는 말이 등장했다</h2>
+          <p class="lead">Andrej Karpathy가 소개한 표현은 트위터(X)를 통해 빠르게 확산되며 개발 문화의 새 키워드가 되었다.</p>
+        </div>
+        <div class="timeline">
+          <div class="time-item">
+            <strong>2025년 2월</strong>
+            <p>OpenAI 공동 창립자이자 Tesla 전 AI 리더인 Andrej Karpathy가 개념을 소개했다.</p>
+          </div>
+          <div class="time-item">
+            <strong>트위터(X) 확산</strong>
+            <p>자연어로 코드를 만들고 흐름을 맡기는 새로운 개발 방식으로 주목받았다.</p>
+          </div>
+          <div class="time-item">
+            <strong>2025년 3월</strong>
+            <p>Merriam-Webster 사전에 등재되며 대중적 표현으로 자리 잡았다.</p>
+          </div>
+        </div>
+      </div>
+      <div class="bottombar"></div>
+    </section>
+
+    <section class="slide" data-category="비교">
+      <div class="topbar"><span class="mark">Compare</span></div>
+      <div class="content wide">
+        <div>
+          <span class="eyebrow">기존 코딩 vs 바이브 코딩</span>
+          <h2>코드를 쓰는 일에서, 결과를 지휘하는 일로</h2>
+        </div>
+        <div class="compare">
+          <div class="compare-card">
+            <h3>기존 코딩</h3>
+            <ul class="check-list">
+              <li>개발자가 직접 코드를 작성</li>
+              <li>프로그래밍 언어 학습 필요</li>
+              <li>코드 구조와 로직의 완전한 이해 필요</li>
+            </ul>
+          </div>
+          <div class="compare-card vibe">
+            <h3>바이브 코딩</h3>
+            <ul class="check-list">
+              <li>자연어 입력으로 기능 요청</li>
+              <li>프로그래밍 언어 학습 부담 감소</li>
+              <li>코드 이해 없이도 결과물 수용 가능</li>
+            </ul>
+          </div>
+        </div>
+        <p class="quote">“가장 인기 있는 새로운 프로그래밍 언어는 영어”</p>
+      </div>
+      <div class="bottombar"></div>
+    </section>
+
+    <section class="slide" data-category="작동 방식">
+      <div class="topbar"><span class="mark">Workflow</span></div>
+      <div class="content wide">
+        <div>
+          <span class="eyebrow">작동 방식</span>
+          <h2>요청하고, 실행하고, 다시 요청하는 반복 개선</h2>
+        </div>
+        <div class="flow">
+          <div class="step"><span>01</span><strong>사용자<br />자연어 입력</strong></div>
+          <div class="step"><span>02</span><strong>LLM<br /><span class="nowrap">코드 생성</span></strong></div>
+          <div class="step"><span>03</span><strong>사용자<br />테스트</strong></div>
+          <div class="step"><span>04</span><strong>수정<br />요청</strong></div>
+          <div class="step"><span>05</span><strong>반복<br />개선</strong></div>
+        </div>
+        <div class="voice-strip">음성 명령까지 결합되면, 개발 과정은 대화형 작업 흐름에 가까워진다.</div>
+      </div>
+      <div class="bottombar"></div>
+    </section>
+
+    <section class="slide" data-category="사례 ①">
+      <div class="topbar"><span class="mark">Case Study</span></div>
+      <div class="content">
+        <div>
+          <span class="eyebrow">Kevin Roose의 실험</span>
+          <h2>비개발자도 자신만의 작은 앱을 만들 수 있는가</h2>
+          <p class="lead">NYT 기자 Kevin Roose는 냉장고 재료를 분석해 도시락 메뉴를 추천하는 LunchBox Buddy 앱을 실험했다.</p>
+          <p class="sub"><span class="badge">한 사람을 위한 소프트웨어</span></p>
+          <p class="sub">기능적으로 작동하지만 오류 가능성이 있어 취미 프로젝트나 개인용 도구에 더 적합하다.</p>
+        </div>
+        <div class="app-mock" aria-label="LunchBox Buddy 앱 화면 예시">
+          <div class="app-head">LunchBox Buddy</div>
+          <div class="app-body">
+            <div class="ingredient"><span>남은 재료</span><strong>달걀 · 치즈 · 토마토</strong></div>
+            <div class="ingredient"><span>조건</span><strong>15분 안에 준비</strong></div>
+            <div class="menu-card">
+              <strong>추천 메뉴</strong>
+              <p>토마토 오믈렛 도시락과 치즈 토스트를 제안합니다.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="bottombar"></div>
+    </section>
+
+    <section class="slide" data-category="사례 ②">
+      <div class="topbar"><span class="mark">Startup Signal</span></div>
+      <div class="content big-percent">
+        <div>
+          <span class="eyebrow">Y Combinator</span>
+          <h2>AI 의존 개발이 스타트업의 기본값으로 이동 중</h2>
+          <p class="lead">2025년 겨울 배치 스타트업 중 일부는 코드베이스의 대부분을 AI로 생성했다고 보고했다.</p>
+        </div>
+        <div class="metric-stack">
+          <div class="percent-ring"><div>25%</div></div>
+          <div class="metric">
+            <strong>95%</strong>
+            <p>해당 스타트업들은 코드베이스의 95%를 AI로 생성했다고 설명했다.</p>
+          </div>
+        </div>
+      </div>
+      <div class="bottombar"></div>
+    </section>
+
+    <section class="slide" data-category="장점">
+      <div class="topbar"><span class="mark">Upside</span></div>
+      <div class="content wide">
+        <div>
+          <span class="eyebrow">장점</span>
+          <h2>아이디어를 소프트웨어로 바꾸는 속도가 빨라진다</h2>
+        </div>
+        <div class="benefit-grid">
+          <div class="benefit"><span class="num">1</span><strong>비개발자도 소프트웨어 제작 가능</strong></div>
+          <div class="benefit"><span class="num">2</span><strong>개발 속도 대폭 향상</strong></div>
+          <div class="benefit"><span class="num">3</span><strong>개인화된 소프트웨어 제작 가능</strong></div>
+          <div class="benefit"><span class="num">4</span><strong><span class="nowrap">프로토타입 제작에 최적화</span></strong></div>
+          <div class="benefit"><span class="num">5</span><strong>엔지니어링 팀 없이 개인 수준 개발 가능</strong></div>
+        </div>
+      </div>
+      <div class="bottombar"></div>
+    </section>
+
+    <section class="slide" data-category="한계">
+      <div class="topbar"><span class="mark">Risk</span></div>
+      <div class="content wide">
+        <div>
+          <span class="eyebrow">한계와 위험</span>
+          <h2>코드를 이해하지 않는 편리함은 새로운 리스크를 만든다</h2>
+        </div>
+        <div class="risk-grid">
+          <div class="risk"><span class="num">!</span><strong>감지되지 않은 버그 가능성</strong></div>
+          <div class="risk"><span class="num">!</span><strong>보안 취약성 발생 가능성</strong></div>
+          <div class="risk"><span class="num">!</span><strong>가짜 리뷰 조작 등 악용 위험</strong></div>
+          <div class="risk"><span class="num">!</span><strong>전문적 환경에서 유지보수 어려움</strong></div>
+          <div class="risk"><span class="num">!</span><strong>검증 역량 없이는 품질 판단이 어려움</strong></div>
+        </div>
+        <p class="quote">Simon Willison은 바이브 코딩이 생산 코드베이스로 가는 길에서는 분명한 위험을 동반한다고 보았다.</p>
+      </div>
+      <div class="bottombar"></div>
+    </section>
+
+    <section class="slide" data-category="전문가 시각">
+      <div class="topbar"><span class="mark">Perspectives</span></div>
+      <div class="content wide">
+        <div>
+          <span class="eyebrow">전문가 시각</span>
+          <h2>가능성과 회의론이 동시에 존재한다</h2>
+        </div>
+        <div class="expert-grid">
+          <div class="expert">
+            <div class="avatar"></div>
+            <h3>Simon Willison</h3>
+            <p>LLM을 타이핑 보조로 쓰는 것과 진짜 바이브 코딩은 다르다고 구분한다.</p>
+          </div>
+          <div class="expert">
+            <div class="avatar"></div>
+            <h3>Gary Marcus</h3>
+            <p>독창적 개발이라기보다 기존 코드의 재생산에 가까운 측면을 지적한다.</p>
+          </div>
+          <div class="expert">
+            <div class="avatar"></div>
+            <h3>Ars Technica 사례</h3>
+            <p>AI가 <span class="nowrap">코드 생성</span>을 거부하고 로직은 직접 개발하라고 답한 아이러니한 사례를 소개했다.</p>
+          </div>
+        </div>
+      </div>
+      <div class="bottombar"></div>
+    </section>
+
+    <section class="slide" data-category="배포">
+      <div class="topbar"><span class="mark">Deployment</span></div>
+      <div class="content wide">
+        <div>
+          <span class="eyebrow">배포 환경</span>
+          <h2><span class="nowrap">코드 생성</span> 이후에도 운영 지식은 여전히 필요하다</h2>
+        </div>
+        <div class="deploy-map">
+          <div class="deploy-card">
+            <div class="deploy-icon server"></div>
+            <h3>기술 설정</h3>
+            <p>서버 설정, 도메인 관리, 호스팅 구성은 실제 서비스 운영의 핵심이다.</p>
+          </div>
+          <div class="deploy-card">
+            <div class="deploy-icon cloud"></div>
+            <h3>기존 서비스</h3>
+            <p>Vercel, Netlify 같은 플랫폼은 배포 장벽을 낮추는 대표적 도구다.</p>
+          </div>
+          <div class="deploy-card">
+            <div class="deploy-icon rocket"></div>
+            <h3>신규 흐름</h3>
+            <p>MCP 기반 AI 스페이스처럼 생성과 배포를 함께 처리하는 환경이 등장하고 있다.</p>
+          </div>
+        </div>
+      </div>
+      <div class="bottombar"></div>
+    </section>
+
+    <section class="slide" data-category="비즈니스">
+      <div class="topbar"><span class="mark">Business</span></div>
+      <div class="content">
+        <div>
+          <span class="eyebrow"><span class="nowrap">비즈니스 시사점</span></span>
+          <h2>소프트웨어 생산의 병목이 바뀐다</h2>
+          <p class="lead">기업은 단순 코딩 능력보다 문제 정의, 검증, AI 감독 역량을 더 중요하게 보게 될 수 있다.</p>
+        </div>
+        <div class="business-board">
+          <div class="biz-item"><span class="badge"><span class="nowrap">역할 재정의</span></span><p><span class="nowrap">개발자는 코더에서</span> <span class="nowrap">AI 감독자로</span> 변화한다.</p></div>
+          <div class="biz-item"><span class="badge">진입 장벽 하락</span><p>비개발자의 소프트웨어 개발 참여가 쉬워진다.</p></div>
+          <div class="biz-item"><span class="badge">채용 기준 변화</span><p>언어 지식보다 검증과 설계 역량이 강조될 수 있다.</p></div>
+          <div class="biz-item"><span class="badge">스타트업 변화</span><p>소규모 팀도 빠르게 제품을 출시할 수 있다.</p></div>
+        </div>
+      </div>
+      <div class="bottombar"></div>
+    </section>
+
+    <section class="slide" data-category="결론">
+      <div class="topbar"><span class="mark">Outlook</span></div>
+      <div class="content">
+        <div>
+          <span class="eyebrow">결론 및 전망</span>
+          <h2>대체가 아니라 보완,<br />자동화가 아니라 협업</h2>
+          <p class="lead">바이브 코딩은 프로토타이핑과 개인 프로젝트에는 강력한 도구가 될 수 있다.</p>
+          <p class="sub">전문적 환경에서는 코드 이해력, 검증 능력, 보안 감각이 함께 필요하다.</p>
+        </div>
+        <div class="collab-center">
+          <h2>AI와 인간의<br />협업 모델</h2>
+        </div>
+      </div>
+      <div class="bottombar"></div>
+    </section>
+
+    <section class="slide" data-category="마무리">
+      <div class="topbar"><span class="mark">Thank You</span></div>
+      <div class="content wide">
+        <div class="final-screen">
+          <div>
+            <p class="final-quote"><span>“Vibe Coding은 코딩을 없애는 것이 아니라,</span><span>코딩의 중심을 ‘작성’에서 ‘기획·검증·협업’으로 옮긴다.”</span></p>
+            <p class="thanks">Thank You / Q&amp;A</p>
+            <p class="reference">참고문헌: 한국어 위키백과 「바이브 코딩」 문서</p>
+          </div>
+        </div>
+      </div>
+      <div class="bottombar"></div>
+    </section>
+  </main>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll(".slide"));
+    const total = slides.length;
+    let current = 0;
+    const requestedSlide = Number(window.location.hash.replace("#", ""));
+    const initialSlide = Number.isFinite(requestedSlide)
+      ? Math.max(0, Math.min(total - 1, requestedSlide - 1))
+      : 0;
+
+    slides.forEach((slide, index) => {
+      const footer = slide.querySelector(".bottombar");
+      footer.innerHTML = `
+        <div class="footer-left">
+          <span>${String(index + 1).padStart(2, "0")} / ${String(total).padStart(2, "0")}</span>
+        </div>
+        <div class="progress" aria-hidden="true"><span></span></div>
+        <span class="footer-hint">← → / Space / Click</span>
+      `;
+    });
+
+    function render(nextIndex, direction = 1) {
+      const bounded = Math.max(0, Math.min(total - 1, nextIndex));
+      if (bounded === current && slides[bounded].classList.contains("active")) {
+        updateProgress();
+        return;
+      }
+
+      slides.forEach((slide, index) => {
+        slide.classList.remove("active", "prev");
+        if (index < bounded || direction < 0 && index === current) {
+          slide.classList.add("prev");
+        }
+      });
+
+      slides[bounded].classList.add("active");
+      current = bounded;
+      window.history.replaceState(null, "", `#${current + 1}`);
+      updateProgress();
+    }
+
+
+    function animateNumbers(slide) {
+      const targets = [
+        slide.querySelector(".percent-ring div"),
+        ...slide.querySelectorAll(".metric strong")
+      ].filter(Boolean);
+
+      targets.forEach((element) => {
+        const raw = element.textContent.trim();
+        const match = raw.match(/^(\d+)(%?)$/);
+        if (!match) return;
+
+        const target = Number(match[1]);
+        const suffix = match[2] || "";
+        const duration = 900;
+        const start = performance.now();
+
+        element.textContent = `0${suffix}`;
+
+        function tick(now) {
+          const progress = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          element.textContent = `${Math.round(target * eased)}${suffix}`;
+          if (progress < 1) requestAnimationFrame(tick);
+        }
+
+        requestAnimationFrame(tick);
+      });
+    }
+
+    function updateProgress() {
+      slides.forEach((slide, index) => {
+        const fill = slide.querySelector(".progress span");
+        const percent = ((index + 1) / total) * 100;
+        fill.style.width = `${percent}%`;
+      });
+    }
+
+    function next() {
+      if (current < total - 1) {
+        render(current + 1, 1);
+      }
+    }
+
+    function previous() {
+      if (current > 0) {
+        render(current - 1, -1);
+      }
+    }
+
+    document.addEventListener("keydown", (event) => {
+      const key = event.key;
+      if (key === "ArrowRight" || key === "PageDown" || key === " ") {
+        event.preventDefault();
+        next();
+      }
+      if (key === "ArrowLeft" || key === "PageUp") {
+        event.preventDefault();
+        previous();
+      }
+      if (key === "Home") {
+        event.preventDefault();
+        render(0, -1);
+      }
+      if (key === "End") {
+        event.preventDefault();
+        render(total - 1, 1);
+      }
+    });
+
+    document.addEventListener("click", () => {
+      next();
+    });
+
+    render(initialSlide, initialSlide > 0 ? 1 : -1);
+  </script>
+</body>
+</html>
